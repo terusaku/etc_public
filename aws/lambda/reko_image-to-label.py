@@ -26,7 +26,7 @@ def post_slack(msg):
 
 
 def notice(labels):
-    topic = 'arn:aws:sns:ap-northeast-1:176272758206:TS-gmail'
+    topic = 'arn:aws:sns:ap-northeast-1:AccountId:xxxxx'
     subject = '[Recognition Image to label]'
     
     msg = labels
@@ -71,14 +71,3 @@ def lambda_handler(event, context):
 
     notice(labels)
 
-#    print(records)
-#    res_s3 = s3r.Bucket(output_bucket).put_object(
-#        ACL='private',
-#        Body=records,
-#        Key=key + '.csv',
-#        ContentType='text/plain'
-#    )
-
-#            name = l['Name']
-#            value = str(l['Confidence'])
-#            print(name + value)
