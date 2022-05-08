@@ -16,7 +16,7 @@ def post_slack(msg):
     send_text = "payload=" + json.dumps(send_data)
 
     request = urllib.request.Request(
-        "https://hooks.slack.com/services/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", 
+        "https://hooks.slack.com/services.....",
         data=send_text.encode("utf-8"), 
         method="POST"
     )
