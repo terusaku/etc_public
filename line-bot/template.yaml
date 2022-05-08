@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  line-bot
+
+  Sample SAM Template for line-bot
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+#Globals:
+#  Function:
+#    Timeout: 3
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: hello_world/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      MemorySize: 128
+      Timeout: 5
+      Policies:
+        - AWSLambdaBasicExecutionRole 
+        - AWSLambdaRole
+        - AmazonSSMReadOnlyAccess
+        - arn:aws:iam::{AccountId}:policy/kms-decrypt
+      Environment:
+        Variables:
+          TZ: Asia/Tokyo
+      Events:
+        HelloWorld:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /hello
+            Method: post
+  CrawlerToeiFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: sam-line-bot-CrawlerToei
+      CodeUri: crawler_toei/
+      Handler: toei_app.lambda_handler
+      Runtime: python3.8
+      MemorySize: 1554
+      Timeout: 25
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:{AccountId}:layer:headlesschrome:10
+        - arn:aws:lambda:ap-northeast-1:{AccountId}:layer:selenium:10
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonS3ReadOnlyAccess
+        - AmazonSSMReadOnlyAccess
+        - arn:aws:iam::{AccountId}:policy/s3-UploadOnly
+        - arn:aws:iam::{AccountId}:policy/kms-decrypt
+      Environment:
+        Variables:
+          TZ: Asia/Tokyo
+          IMAGE_BUCKET: 'xxxxxxxx'
+  CrawlerKitaFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: sam-line-bot-CrawlerKita
+      CodeUri: crawler_kita/
+      Handler: kita_app.lambda_handler
+      Runtime: python3.8
+      MemorySize: 2072
+      Timeout: 60
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:{AccountId}:layer:headlesschrome:10
+        - arn:aws:lambda:ap-northeast-1:{AccountId}:layer:selenium:10
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonS3ReadOnlyAccess
+        - AmazonSSMReadOnlyAccess
+        - arn:aws:iam::{AccountId}:policy/s3-UploadOnly
+        - arn:aws:iam::{AccountId}:policy/kms-decrypt
+      Environment:
+        Variables:
+          TZ: Asia/Tokyo
+          IMAGE_BUCKET: 'xxxxxxxx'
+  CrawlerTaitoFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: sam-line-bot-CrawlerTaito
+      CodeUri: crawler_taito/
+      Handler: taito_app.lambda_handler
+      Runtime: python3.8
+      MemorySize: 2072
+      Timeout: 60
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:{AccountId}:layer:headlesschrome:10
+        - arn:aws:lambda:ap-northeast-1:{AccountId}:layer:selenium:10
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AmazonS3ReadOnlyAccess
+        - AmazonSSMReadOnlyAccess
+        - arn:aws:iam::{AccountId}:policy/s3-UploadOnly
+        - arn:aws:iam::{AccountId}:policy/kms-decrypt
+      Environment:
+        Variables:
+          TZ: Asia/Tokyo
+          IMAGE_BUCKET: 'xxxxxxxx'
+
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  HelloWorldApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HelloWorldFunctionRole.Arn

@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "sam-line-bot-tennis"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-rx6szo5nb5j4"
+s3_prefix = "sam-line-bot-tennis"
+region = "ap-northeast-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+
