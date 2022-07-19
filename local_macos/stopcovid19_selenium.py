@@ -51,10 +51,6 @@ def post_twitter(image_f,url_title,find_text,num):
 
     number = str(int(num)+1)
     msg = f'''
-{url_title}
-{find_text} 
-から自動取得しました.
-↓{number}枚目.
 '''
     data = {"status": msg, "media_ids": media_id}
     twitter.post(api_tw_text, params=data)
