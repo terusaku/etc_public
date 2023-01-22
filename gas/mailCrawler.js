@@ -3,7 +3,7 @@
 function myFunction() {
     const threads = GmailApp.search('from:{senderName}}');
     threads.forEach(function(thread) {
-      let msgs = thread.getMessages();
+      const msgs = thread.getMessages();
       msgs.forEach(function(msg) {
         let recvDate = msg.getDate();
         let sub = msg.getSubject();
@@ -30,10 +30,10 @@ function myFunction() {
         token: slackToken,
         text: postMsg,
       };
-      const ops = {
+      const opts = {
         'method': 'post',
         'payload': payload
       };
-       let resData = UrlFetchApp.fetch(slackUrl, ops).getContentText();
+       let resData = UrlFetchApp.fetch(slackUrl, opts).getContentText();
        console.log(resData);  
   }

@@ -63,6 +63,9 @@ def lambda_handler(event, context):
             if (len(l['Parents']) > 0):
                 for i in range(len(l['Parents'])):
                     label.append(l['Parents'][i]['Name'])
+        
+        else:
+            label.append(f"No Labels over {threshold}% reliability")
 
         records = records + ','.join(map(str, label)) + '\n'
         
