@@ -1,24 +1,14 @@
 import os
-import csv
-import time
 import json
 import logging
-import urllib.request
-import urllib.parse
-import shutil
-import zipfile
 import requests
 import boto3
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.select import Select 
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
 #from bs4 import BeautifulSoup
 #from requests_oauthlib import OAuth1Session
