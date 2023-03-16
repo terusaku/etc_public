@@ -1,7 +1,5 @@
-import os
 import json
 import logging
-import requests
 import boto3
 
 
