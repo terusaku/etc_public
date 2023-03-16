@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "github.copilot"
+    ],
+    "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
+    "python.analysis.completeFunctionParens": true,
+    "python.linting.enabled": true,   
+}
