@@ -1,5 +1,8 @@
+import glob
 import subprocess
 from unittest import TestCase
+
+import lizard
 
 
 class TestShuffle(TestCase):
@@ -34,3 +37,30 @@ class TestShuffle(TestCase):
         for param in params:
             with self.subTest(param=param):
                 self._test_std(param)
+
+
+class TestLizard(TestCase):
+    def lizard_targets(self):
+        path = './*.py'
+        files = glob.glob(path)
+        return files
+
+    def test_lizard(self):
+        targets = self.lizard_targets()
+        if not targets:
+            pass
+        else:
+            results = []
+            for code in targets:
+                analysis = lizard.analyze_file(code)
+                for i in analysis.function_list:
+                    result = {}
+                    result['name'] = analysis.__dict__['filename'] + '.' + i.__dict__['name']
+                    result['ccn'] = i.__dict__['cyclomatic_complexity'] 
+                    result['nloc'] = i.__dict__['nloc']
+
+                    assert result['ccn'] < 15 # cyclomatic complexity number
+                    assert result['nloc'] < 50 # lines of code without comments
+                    results.append(result)
+
+            print(results)

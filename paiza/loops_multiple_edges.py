@@ -17,26 +17,31 @@ def compare_links(link, target_lines):
             return []
             
 
-result_links = []
-shrink_result = []
-# print(lines)
-for i, link in enumerate(lines):
-    if (i + 1) < len(lines):
-        target_lines = lines[i+1:]
-        # print(link, target_lines)
-        result_link  = compare_links(link, target_lines)
-        # print(result_link)
-        if result_link:
-            result_link.sort()
-            result_links.extend([result_link])
+def main():
+    result_links = []
+    shrink_result = []
+    # print(lines)
+    for i, link in enumerate(lines):
+        if (i + 1) < len(lines):
+            target_lines = lines[i+1:]
+            # print(link, target_lines)
+            result_link  = compare_links(link, target_lines)
+            # print(result_link)
+            if result_link:
+                result_link.sort()
+                result_links.extend([result_link])
 
-# print(result_links)
-if result_links:
-    shrink_result = list(map(list, set(map(tuple, result_links))))
-# print(shrink_result)
+    # print(result_links)
+    if result_links:
+        shrink_result = list(map(list, set(map(tuple, result_links))))
+    # print(shrink_result)
 
-result_counts = len(shrink_result)
-print(result_counts)
-if result_counts > 0:
-    for i in shrink_result:
-        print(' '.join(map(str, i)))
+    result_counts = len(shrink_result)
+    print(result_counts)
+    if result_counts > 0:
+        for i in shrink_result:
+            print(' '.join(map(str, i)))
+
+
+if __name__ == '__main__':
+    main()
