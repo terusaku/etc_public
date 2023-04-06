@@ -48,7 +48,7 @@ class TestLizard(TestCase):
     def test_lizard(self):
         targets = self.lizard_targets()
         if not targets:
-            pass
+            assert True
         else:
             results = []
             for code in targets:
