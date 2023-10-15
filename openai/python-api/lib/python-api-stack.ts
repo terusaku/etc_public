@@ -52,6 +52,11 @@ export class PythonApiStack extends cdk.Stack {
     //     ],
     //   }),
     // });
+
+    // const openapiApiKey = ssm.StringParameter.fromSecureStringParameterAttributes(this, 'chatApiKey', {
+    //   parameterName: '/openai/chatgpt/api_key',
+    //   // version: 1,
+    // }).stringValue
     const pythonClient = new alpha.PythonFunction(this, 'apiFunction', {
       functionName: 'chatgpt-api-client',
       entry: './functions/hello',
@@ -60,9 +65,8 @@ export class PythonApiStack extends cdk.Stack {
       runtime: _lambda.Runtime.PYTHON_3_10,
       environment: {
         TABLE_NAME: chat_table.tableName,
-        OPENAI_API_KEY:  ssm.StringParameter.fromSecureStringParameterAttributes(this, 'chatApiKey', {
-          parameterName: 'chatgpt-api-key',
-          // version: 1,
+        OPENAI_API_KEY: ssm.StringParameter.fromStringParameterAttributes(this, 'chatApiKey', {
+          parameterName: '/openai/chatgpt/apiKey',
         }).stringValue,
       },
       role: new iam.Role(this, 'chatgpt-api-clientRole', {
@@ -74,13 +78,13 @@ export class PythonApiStack extends cdk.Stack {
     });
 
     chat_table.grantReadWriteData(pythonClient);
-    pythonClient.addToRolePolicy(new iam.PolicyStatement({
-      actions: [
-        'ssm:GetParameter',
-        'kms:Decrypt'
-      ],
-      resources: [`arn:aws:ssm:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:parameter/chatgpt-api-key`],
-    }));
+    // pythonClient.addToRolePolicy(new iam.PolicyStatement({
+    //   actions: [
+    //     'ssm:GetParameter',
+    //     'kms:Decrypt'
+    //   ],
+    //   resources: [`arn:aws:ssm:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:parameter/openai/chatgpt/*`],
+    // }));
 
 
     const restApi = new apigateway.RestApi(this, 'PythonApi', {
@@ -156,33 +160,37 @@ export class PythonApiStack extends cdk.Stack {
       parent: restApi.root,
 
     });
+    const resource = chatgptClientResource.addResource('chatgpt-client');
+    resource.addMethod('GET',
+      new apigateway.LambdaIntegration(pythonClient),
+    );
 
-    chatgptClientResource.addMethod('GET',
-      new apigateway.LambdaIntegration(pythonClient),
-    );
-    chatgptClientResource.addMethod('POST',
-      new apigateway.LambdaIntegration(pythonClient),
-    );
-    // restApi.root.addResource('chatgpt-client').addMethod('GET',
+    // chatgptClientResource.addMethod('GET',
     //   new apigateway.LambdaIntegration(pythonClient),
     // );
-    restApi.root.addResource('chatgpt-client').addMethod('OPTIONS',
-      new apigateway.MockIntegration({
-        integrationResponses: [
-          {
-            statusCode: '200',
-            responseParameters: {
-              'method.response.header.Access-Control-Allow-Origin': "'*'",
-              'method.response.header.Access-Control-Allow-Methods': "'GET,OPTIONS'",
-            },
-          },
-        ],
-        passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_TEMPLATES,
-        requestTemplates: {
-          'application/json': '{"statusCode": 200}',
-        },
-      }),
-    );
+    // chatgptClientResource.addMethod('POST',
+    //   new apigateway.LambdaIntegration(pythonClient),
+    // );
+    // // restApi.root.addResource('chatgpt-client').addMethod('GET',
+    // //   new apigateway.LambdaIntegration(pythonClient),
+    // // );
+    // restApi.root.addResource('chatgpt-client').addMethod('OPTIONS',
+    //   new apigateway.MockIntegration({
+    //     integrationResponses: [
+    //       {
+    //         statusCode: '200',
+    //         responseParameters: {
+    //           'method.response.header.Access-Control-Allow-Origin': "'*'",
+    //           'method.response.header.Access-Control-Allow-Methods': "'GET,OPTIONS'",
+    //         },
+    //       },
+    //     ],
+    //     passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_TEMPLATES,
+    //     requestTemplates: {
+    //       'application/json': '{"statusCode": 200}',
+    //     },
+    //   }),
+    // );
     
 
       // clientFunction.addToRolePolicy(new iam.PolicyStatement({
