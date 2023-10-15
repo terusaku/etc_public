@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 // import * as sam from 'aws-cdk-lib/aws-sam';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as logs from 'aws-cdk-lib/aws-logs';
 import * as _lambda from 'aws-cdk-lib/aws-lambda';
 import * as alpha from '@aws-cdk/aws-lambda-python-alpha';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -69,6 +70,7 @@ export class PythonApiStack extends cdk.Stack {
           parameterName: '/openai/chatgpt/apiKey',
         }).stringValue,
       },
+      logRetention: logs.RetentionDays.ONE_WEEK,
       role: new iam.Role(this, 'chatgpt-api-clientRole', {
         assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
         managedPolicies: [
@@ -96,48 +98,14 @@ export class PythonApiStack extends cdk.Stack {
         dataTraceEnabled: true,
         metricsEnabled: true,
       },
-      // method: [
-      //   {
-      //     httpMethod: 'POST',
-      //     resourcePath: '/',
-      //     requestModels: {
-      //       'application/json': new apigateway.Model(this, 'requestModel', {
-      //         modelName: 'requestModel',
-      //         contentType: 'application/json',
-      //         schema: {
-      //           type: apigateway.JsonSchemaType.OBJECT,
-      //           properties: {
-      //             prompt: {
-      //               type: apigateway.JsonSchemaType.STRING,
-      //             },
-      //             userId: {
-      //               type: apigateway.JsonSchemaType.STRING,
-      //             },
-      //           },
-      //           required: ['prompt', 'userId'],
-      //         },
-      //       }),
-      //     },
-      //     requestValidatorOptions: {
-      //       requestValidatorName: 'requestValidator',
-      //       validateRequestBody: true,
-      //       validateRequestParameters: true,
-      //     },
-      //     integration: new apigateway.LambdaIntegration(clientFunction),
-      //     methodResponses: [
-      //       {
-      //         statusCode: '200',
-      //         responseParameters: {
-      //           'method.response.header.Access-Control-Allow-Origin': true,
-      //         },
-      //       },
-      //     ],
-      //     requestParameters: {
-      //       'method.request.header.Access-Control-Allow-Origin': true,
-      //     },
-      //   },
-      // ],
       defaultMethodOptions: {
+        // apiKeyRequired: true,
+        authorizationType: apigateway.AuthorizationType.NONE,
+        requestValidatorOptions: {
+          requestValidatorName: 'chatgpt-api-validator',
+          validateRequestBody: true,
+          validateRequestParameters: true,
+        },
         methodResponses: [
           {
             statusCode: '200',
@@ -155,19 +123,52 @@ export class PythonApiStack extends cdk.Stack {
       },
     });
 
-    const chatgptClientResource = new apigateway.ProxyResource(this, 'proxyResource', {
-      anyMethod: false,
+    const chatgptClientResource = new apigateway.Resource(this, 'lambdaApiResource', {
       parent: restApi.root,
-
+      pathPart: 'chatgpt-client',
     });
-    const resource = chatgptClientResource.addResource('chatgpt-client');
-    resource.addMethod('GET',
+    chatgptClientResource.addMethod('GET',
       new apigateway.LambdaIntegration(pythonClient),
+      {
+        operationName: 'get-prompts',
+      },
+    );
+    chatgptClientResource.addMethod('POST',
+      new apigateway.LambdaIntegration(pythonClient),
+      {
+        operationName: 'control-settings',
+      },
+    );
+    chatgptClientResource.addMethod('OPTIONS',
+      new apigateway.MockIntegration({
+        integrationResponses: [
+          {
+            statusCode: '200',
+            responseParameters: {
+              'method.response.header.Access-Control-Allow-Origin': "'*'",
+              'method.response.header.Access-Control-Allow-Methods': "'GET,OPTIONS'",
+            },
+          },
+        ],
+        passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_TEMPLATES,
+        requestTemplates: {
+          'application/json': '{"statusCode": 200}',
+        },
+      }),
+      {
+        operationName: 'options-mock',
+        methodResponses: [
+          {
+            statusCode: '200',
+            responseParameters: {
+              'method.response.header.Access-Control-Allow-Origin': true,
+              'method.response.header.Access-Control-Allow-Methods': true,
+            },
+          },
+        ],
+      },
     );
 
-    // chatgptClientResource.addMethod('GET',
-    //   new apigateway.LambdaIntegration(pythonClient),
-    // );
     // chatgptClientResource.addMethod('POST',
     //   new apigateway.LambdaIntegration(pythonClient),
     // );
@@ -192,8 +193,6 @@ export class PythonApiStack extends cdk.Stack {
     //   }),
     // );
     
-
-      // clientFunction.addToRolePolicy(new iam.PolicyStatement({
 
       
       // new sam.CfnFunction(this, 'PythonApiFunction', {
