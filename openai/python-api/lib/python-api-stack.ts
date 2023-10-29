@@ -14,8 +14,8 @@ export class PythonApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const chat_table = new dynamodb.Table(this, 'historyTable', {
-      tableName: 'chatgpt-api-history',
+    const chat_table = new dynamodb.Table(this, 'chatHistoryTable', {
+      tableName: 'chatgpt-chat-history',
       partitionKey: {
         name: 'sessionId',
         type: dynamodb.AttributeType.STRING,
@@ -58,8 +58,8 @@ export class PythonApiStack extends cdk.Stack {
     //   parameterName: '/openai/chatgpt/api_key',
     //   // version: 1,
     // }).stringValue
-    const pythonClient = new alpha.PythonFunction(this, 'apiFunction', {
-      functionName: 'chatgpt-api-client',
+    const pythonClient = new alpha.PythonFunction(this, 'chatGptApiFunction', {
+      functionName: 'chatgpt-api-llm',
       entry: './functions/hello',
       index: 'lambda_function.py',
       handler: 'handler',
@@ -91,8 +91,8 @@ export class PythonApiStack extends cdk.Stack {
     // }));
 
 
-    const restApi = new apigateway.RestApi(this, 'PythonApi', {
-      restApiName: 'chatgpt-api',
+    const restApi = new apigateway.RestApi(this, 'chatGptApi', {
+      restApiName: 'chatgpt-api-rest',
       deployOptions: {
         stageName: 'dev',
         tracingEnabled: true,
