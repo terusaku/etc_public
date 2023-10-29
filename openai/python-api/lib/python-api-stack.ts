@@ -15,9 +15,9 @@ export class PythonApiStack extends cdk.Stack {
     super(scope, id, props);
 
     const chat_table = new dynamodb.Table(this, 'historyTable', {
-      tableName: 'chatgpt-client-history',
+      tableName: 'chatgpt-api-history',
       partitionKey: {
-        name: 'id',
+        name: 'sessionId',
         type: dynamodb.AttributeType.STRING,
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -63,6 +63,8 @@ export class PythonApiStack extends cdk.Stack {
       entry: './functions/hello',
       index: 'lambda_function.py',
       handler: 'handler',
+      memorySize: 1536,
+      timeout: cdk.Duration.seconds(30),
       runtime: _lambda.Runtime.PYTHON_3_10,
       environment: {
         TABLE_NAME: chat_table.tableName,
