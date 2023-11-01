@@ -15,7 +15,7 @@ export class PythonApiStack extends cdk.Stack {
     super(scope, id, props);
 
     const chat_table = new dynamodb.Table(this, 'chatHistoryTable', {
-      tableName: 'chatgpt-chat-history',
+      tableName: 'chatgpt-msg-history',
       partitionKey: {
         name: 'sessionId',
         type: dynamodb.AttributeType.STRING,
@@ -25,6 +25,8 @@ export class PythonApiStack extends cdk.Stack {
       //   name: 'createdAt',
       //   type: dynamodb.AttributeType.STRING,
       // },
+      timeToLiveAttribute: 'ttl',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     chat_table.addGlobalSecondaryIndex({
       indexName: 'byUserId',
@@ -34,7 +36,7 @@ export class PythonApiStack extends cdk.Stack {
       },
       sortKey: {
         name: 'createdAt',
-        type: dynamodb.AttributeType.STRING,
+        type: dynamodb.AttributeType.NUMBER,
       },
     });
 
@@ -63,7 +65,7 @@ export class PythonApiStack extends cdk.Stack {
       entry: './functions/hello',
       index: 'lambda_function.py',
       handler: 'handler',
-      memorySize: 1536,
+      memorySize: 1024,
       timeout: cdk.Duration.seconds(30),
       runtime: _lambda.Runtime.PYTHON_3_10,
       environment: {
