@@ -14,52 +14,32 @@ export class PythonApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const chat_table = new dynamodb.Table(this, 'chatHistoryTable', {
-      tableName: 'chatgpt-msg-history',
+    const chat_table = new dynamodb.Table(this, 'ChatGptHistoryTable', {
+      tableName: 'chatgpt-llm-history',
       partitionKey: {
         name: 'sessionId',
         type: dynamodb.AttributeType.STRING,
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      // sortKey: {
-      //   name: 'createdAt',
-      //   type: dynamodb.AttributeType.STRING,
-      // },
-      timeToLiveAttribute: 'ttl',
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-    });
-    chat_table.addGlobalSecondaryIndex({
-      indexName: 'byUserId',
-      partitionKey: {
-        name: 'userId',
-        type: dynamodb.AttributeType.STRING,
-      },
       sortKey: {
         name: 'createdAt',
         type: dynamodb.AttributeType.NUMBER,
       },
+      timeToLiveAttribute: 'ttl',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
-
-    // const clientFunction = new _lambda.Function(this, 'PythonApiFunction', {
-    //   functionName: 'chatgpt-python-client',
-    //   runtime: _lambda.Runtime.PYTHON_3_10,
-    //   code: _lambda.Code.fromAsset('./functions/hello'),
-    //   handler: 'lambda_function.handler',
-    //   environment: {
-    //     TABLE_NAME: dynamoTable.tableName,
+    // chat_table.addGlobalSecondaryIndex({
+    //   indexName: 'byCreatedAt',
+    //   partitionKey: {
+    //     name: 'sessionId',
+    //     type: dynamodb.AttributeType.STRING,
     //   },
-    //   role: new iam.Role(this, 'chatgpt-python-clientRole', {
-    //     assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-    //     managedPolicies: [
-    //       iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-    //     ],
-    //   }),
+    //   sortKey: {
+    //     name: 'createdAt',
+    //     type: dynamodb.AttributeType.NUMBER,
+    //   },
     // });
 
-    // const openapiApiKey = ssm.StringParameter.fromSecureStringParameterAttributes(this, 'chatApiKey', {
-    //   parameterName: '/openai/chatgpt/api_key',
-    //   // version: 1,
-    // }).stringValue
     const pythonClient = new alpha.PythonFunction(this, 'chatGptApiFunction', {
       functionName: 'chatgpt-api-llm',
       entry: './functions/hello',
@@ -172,6 +152,8 @@ export class PythonApiStack extends cdk.Stack {
         ],
       },
     );
+  };
+}
 
     // chatgptClientResource.addMethod('POST',
     //   new apigateway.LambdaIntegration(pythonClient),
@@ -197,35 +179,3 @@ export class PythonApiStack extends cdk.Stack {
     //   }),
     // );
     
-
-      
-      // new sam.CfnFunction(this, 'PythonApiFunction', {
-      //   functionName: 'chatgpt-api',
-      // runtime: 'python3.10',
-      // codeUri: {
-      //   bucket: 'chatgpt-api',
-      //   key: `functions/app.zip`
-      // },
-      // handler: 'app.lambda_handler',
-      // events: {
-      //   api: {
-      //     type: 'Api',
-      //     properties: {
-      //       restApiId: restApi.ref,
-      //       method: 'POST',
-      //       path: '/',
-      //     },
-      //   },
-      // },
-      // environment: {},
-      // https://github.com/aws/serverless-application-model/blob/master/docs/policy_templates.rst
-      // policies: [
-      //   {
-      //     dynamoDbCrudPolicy: {
-      //       tableName: dynamoTable.tableName,
-      //     },
-      //   },
-      // ],
-  
-  }
-}

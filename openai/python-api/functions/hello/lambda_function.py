@@ -54,7 +54,8 @@ class chatHistory:
         self.message = '¥n'.join(message)
 
         self.client = self.init_client()
-        self.key_time = self.timestamp // 10000 * 10000
+        self.key_time = str(self.timestamp // 10000 * 10000)
+        self.ttl = str(int(time.time()) + 60 * 60 * 24) # 1 day
 
     def init_client(self):
         dynamodb = boto3.client('dynamodb')
@@ -63,19 +64,19 @@ class chatHistory:
     def save_history(self):
         item = {
             'sessionId': {
-                'S': f"{self.userId}-{self.key_time}"
-            },
-            'userId': {
                 'S': self.userId
             },
+            # 'userId': {
+            #     'S': self.userId
+            # },
             'createdAt': {
-                'N': str(self.timestamp)
+                'N': self.key_time
             },
             'message': {
                 'S': self.message
             },
             'ttl': {
-                'N': str(int(time.time()) + 60 * 60 * 24) # 1 day
+                'N': self.ttl
             },
         }
         logger.info(item)
@@ -85,21 +86,34 @@ class chatHistory:
         )
 
     def get_history(self):
-        response = self.client.batch_get_item(
-            RequestItems={
-                self.table: {
-                    'Keys': [
-                        {
-                            'sessionId': {
-                                'S': f"{self.userId}-{self.key_time}"
-                            },
-                        }
-                    ],
-                    'ProjectionExpression': 'message',
-                    # 'ConsistentRead': True,
+        # response = self.client.batch_get_item(
+        #     RequestItems={
+        #         self.table: {
+        #             'Keys': [
+        #                 {
+        #                     'sessionId': {
+        #                         'S': f"{self.userId}-{self.key_time}"
+        #                     },
+        #                 }
+        #             ],
+        #             'ProjectionExpression': 'message',
+        #             # 'ConsistentRead': True,
+        #         }
+        #     }                        
+        # )['Responses'][self.table]
+        response = self.client.query(
+            TableName=self.table,
+            KeyConditionExpression='sessionId = :session and createdAt = :createdAt',
+            ExpressionAttributeValues={
+                ':session': {
+                    'S': self.userId
+                },
+                ':createdAt': {
+                    'N': self.key_time
                 }
-            }                        
-        )['Responses'][self.table]
+            },
+            ProjectionExpression='message',
+        )['Items']
         logger.info(response)
         if response:
             history = ''
