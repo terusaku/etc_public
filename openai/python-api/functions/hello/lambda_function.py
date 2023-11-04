@@ -17,6 +17,7 @@ from langchain.memory.chat_message_histories import DynamoDBChatMessageHistory
 # from langchain import OpenAI, LLMChain, PromptTemplate
 # from langchain.memory import ConversationBufferWindowMemory
 
+SLACK_SIGNING_SECRET = os.environ['SLACK_SIGNING_SECRET']
 
 h = logging.StreamHandler(sys.stdout)
 logger = logging.getLogger(__name__)
@@ -27,20 +28,6 @@ format = logging.Formatter('%(asctime)s [%(levelname)s](%(name)s: %(lineno)d)  :
 h.setFormatter(format)
 logger.addHandler(h)
 logger.setLevel(logging.INFO)
-
-
-# def save_chat_history(userId, timestamp, message):
-#     dynamodb = boto3.resource('dynamodb')
-#     table = dynamodb.Table(os.environ['TABLE_NAME'])
-
-#     item = {
-#         'sessionId': f"{userId}-{timestamp}",
-#         'userId': userId,
-#         'createdAt': timestamp,
-#         'message': message,
-#         'ttl': int(time.time()) + 60 * 60 * 24 # 1 day
-#     }
-#     table.put_item(Item=item)
 
 
 class chatHistory:
@@ -66,10 +53,10 @@ class chatHistory:
             'sessionId': {
                 'S': self.userId
             },
-            # 'userId': {
-            #     'S': self.userId
-            # },
             'createdAt': {
+                'N': str(self.timestamp)
+            },
+            'keyTime': {
                 'N': self.key_time
             },
             'message': {
@@ -86,31 +73,17 @@ class chatHistory:
         )
 
     def get_history(self):
-        # response = self.client.batch_get_item(
-        #     RequestItems={
-        #         self.table: {
-        #             'Keys': [
-        #                 {
-        #                     'sessionId': {
-        #                         'S': f"{self.userId}-{self.key_time}"
-        #                     },
-        #                 }
-        #             ],
-        #             'ProjectionExpression': 'message',
-        #             # 'ConsistentRead': True,
-        #         }
-        #     }                        
-        # )['Responses'][self.table]
         response = self.client.query(
             TableName=self.table,
-            KeyConditionExpression='sessionId = :session and createdAt = :createdAt',
+            KeyConditionExpression='sessionId = :session',
+            # KeyConditionExpression='sessionId = :session and keyTime = :keyTime',
             ExpressionAttributeValues={
                 ':session': {
                     'S': self.userId
                 },
-                ':createdAt': {
-                    'N': self.key_time
-                }
+                # ':keyTime': {
+                #     'N': self.key_time
+                # }
             },
             ProjectionExpression='message',
         )['Items']
@@ -124,6 +97,26 @@ class chatHistory:
         else:
             return ''
 
+def respond_slack_challenge(event):
+    slack_event = json.loads(event['body'])
+
+    if 'challenge' in slack_event:
+        return {'statusCode': 200, 'body': json.dumps({'challenge': slack_event['challenge']})}
+
+def verify_slack_challenge(event):
+    slack_signature = event['headers']['X-Slack-Signature']
+    slack_request_timestamp = event['headers']['X-Slack-Request-Timestamp']
+
+    # 署名を構成する
+    sig_base = f"v0:{slack_request_timestamp}:{event['body']}".encode('utf-8')
+    my_signature = 'v0=' + hmac.new(
+        os.environ['SLACK_SIGNING_SECRET'].encode('utf-8'),
+        sig_base,
+        hashlib.sha256
+    ).hexdigest()
+
+    # 署名が一致するか検証
+    return hmac.compare_digest(my_signature, slack_signature)    
 
 
 def handler(event, context):
@@ -142,14 +135,22 @@ def handler(event, context):
 
     system_preset = 'You are a {role}, all the answer must be with confidence value between 0 and 10.'
     human_input = '{history}' + '¥n' + 'Tell me What you can provide, and What a type of input you can better respond?'
+
     if 'body' in event:
         body = json.loads(event['body'])
-        try:
-            human_input = '{history}' + '¥n' + body['user_input']
-            logger.info('input: ' + human_input)
-        except KeyError:
-            pass
-            logger.info('`user_input` does not exist in the request body.')
+
+        if 'challenge' in body:
+            respond_slack_challenge(event)
+
+        elif verify_slack_signature(event):        
+            try:
+                input_prompt = body['user_input']
+                logger.info('input: ' + human_input)
+            except KeyError:
+                pass
+                logger.info('Input Pamameter does not exist in the request body.')
+                input_prompt = body['text']
+            human_input = '{history}' + '¥n' + input_prompt
     
     chat_history = chatHistory(user_id, timestamp, [human_input])
     system_message_prompt = SystemMessagePromptTemplate.from_template(system_preset)

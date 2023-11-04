@@ -29,13 +29,13 @@ export class PythonApiStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     // chat_table.addGlobalSecondaryIndex({
-    //   indexName: 'byCreatedAt',
+    //   indexName: 'byKeyTime',
     //   partitionKey: {
     //     name: 'sessionId',
     //     type: dynamodb.AttributeType.STRING,
     //   },
     //   sortKey: {
-    //     name: 'createdAt',
+    //     name: 'keyTime',
     //     type: dynamodb.AttributeType.NUMBER,
     //   },
     // });
@@ -111,12 +111,12 @@ export class PythonApiStack extends cdk.Stack {
       parent: restApi.root,
       pathPart: 'chatgpt-client',
     });
-    chatgptClientResource.addMethod('GET',
-      new apigateway.LambdaIntegration(pythonClient),
-      {
-        operationName: 'get-prompts',
-      },
-    );
+    // chatgptClientResource.addMethod('GET',
+    //   new apigateway.LambdaIntegration(pythonClient),
+    //   {
+    //     operationName: 'get-prompts',
+    //   },
+    // );
     chatgptClientResource.addMethod('POST',
       new apigateway.LambdaIntegration(pythonClient),
       {
