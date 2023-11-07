@@ -1,5 +1,7 @@
 import os
 import sys
+import hashlib
+import hmac
 import time
 import json
 import logging
@@ -97,11 +99,10 @@ class chatHistory:
         else:
             return ''
 
-def respond_slack_challenge(event):
-    slack_event = json.loads(event['body'])
+def respond_slack_challenge(event_body):
+    # slack_event = json.loads(event['body'])
 
-    if 'challenge' in slack_event:
-        return {'statusCode': 200, 'body': json.dumps({'challenge': slack_event['challenge']})}
+    return {'statusCode': 200, 'body': json.dumps({'challenge': event_body['challenge']})}
 
 def verify_slack_challenge(event):
     slack_signature = event['headers']['X-Slack-Signature']

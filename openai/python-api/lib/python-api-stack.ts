@@ -53,6 +53,9 @@ export class PythonApiStack extends cdk.Stack {
         OPENAI_API_KEY: ssm.StringParameter.fromStringParameterAttributes(this, 'chatApiKey', {
           parameterName: '/openai/chatgpt/apiKey',
         }).stringValue,
+        SLACK_SIGNING_SECRET: ssm.StringParameter.fromStringParameterAttributes(this, 'slackSigningSecret', {
+          parameterName: '/slack/chatgpt_slackbot/signing_secret',
+        }).stringValue,
       },
       logRetention: logs.RetentionDays.ONE_WEEK,
       role: new iam.Role(this, 'chatgpt-api-clientRole', {
