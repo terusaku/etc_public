@@ -7,6 +7,7 @@ import json
 import logging
 from typing import List, Dict, Sequence, Tuple, Type, TypeVar, Union, Any
 
+import requests
 import boto3
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import (
@@ -104,7 +105,7 @@ def respond_slack_challenge(event_body):
 
     return {'statusCode': 200, 'body': json.dumps({'challenge': event_body['challenge']})}
 
-def verify_slack_challenge(event):
+def verify_slack_signature(event):
     slack_signature = event['headers']['X-Slack-Signature']
     slack_request_timestamp = event['headers']['X-Slack-Request-Timestamp']
 
@@ -118,6 +119,25 @@ def verify_slack_challenge(event):
 
     # 署名が一致するか検証
     return hmac.compare_digest(my_signature, slack_signature)    
+
+
+def post_slack_message(slackbot_token, channel_id, msg):
+    url = 'https://slack.com/api/chat.postMessage'
+    headers = {
+        'Authorization': f"Bearer {slackbot_token}",
+        'Content-Type': 'application/json'
+    }
+    payload = {
+        'channel': channel_id,
+        'text': msg
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(payload))
+    if respose.status_code != 200:
+        logger.error(response.text)
+        raise Exception('Failed to Post Slack API')
+    else:
+        return response.json()
 
 
 def handler(event, context):
@@ -141,16 +161,17 @@ def handler(event, context):
         body = json.loads(event['body'])
 
         if 'challenge' in body:
-            respond_slack_challenge(event)
+            respond_slack_challenge(body)
 
         elif verify_slack_signature(event):        
             try:
-                input_prompt = body['user_input']
+                # input_prompt = body['user_input']
+                input_prompt = body['event']['text']
                 logger.info('input: ' + human_input)
             except KeyError:
                 pass
                 logger.info('Input Pamameter does not exist in the request body.')
-                input_prompt = body['text']
+                input_prompt = 'There is no prompt properly.'
             human_input = '{history}' + '¥n' + input_prompt
     
     chat_history = chatHistory(user_id, timestamp, [human_input])
@@ -178,6 +199,13 @@ def handler(event, context):
     if reply_content:
         chat_history = chatHistory(user_id, timestamp, ['Human:' + human_input, 'AI:' + reply_content])
         chat_history.save_history()
+
+        res = post_slack_message(
+            os.getenv('SLACK_BOT_TOKEN'),
+            body['event']['channel'],
+            reply_content
+        )
+        logger.info(res)
 
         return {
             'statusCode': 200,

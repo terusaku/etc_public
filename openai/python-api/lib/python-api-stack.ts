@@ -56,6 +56,9 @@ export class PythonApiStack extends cdk.Stack {
         SLACK_SIGNING_SECRET: ssm.StringParameter.fromStringParameterAttributes(this, 'slackSigningSecret', {
           parameterName: '/slack/chatgpt_slackbot/signing_secret',
         }).stringValue,
+        SLACK_BOT_TOKEN: ssm.StringParameter.fromStringParameterAttributes(this, 'slackBotToken', {
+          parameterName: '/slack/chatgpt_slackbot/oauth_token',
+        }).stringValue,
       },
       logRetention: logs.RetentionDays.ONE_WEEK,
       role: new iam.Role(this, 'chatgpt-api-clientRole', {
