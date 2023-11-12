@@ -45,8 +45,8 @@ export class PythonApiStack extends cdk.Stack {
       entry: './functions/hello',
       index: 'lambda_function.py',
       handler: 'handler',
-      memorySize: 1024,
-      timeout: cdk.Duration.seconds(30),
+      memorySize: 512,
+      timeout: cdk.Duration.seconds(20),
       runtime: _lambda.Runtime.PYTHON_3_10,
       environment: {
         TABLE_NAME: chat_table.tableName,

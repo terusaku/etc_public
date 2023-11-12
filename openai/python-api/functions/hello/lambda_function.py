@@ -45,7 +45,7 @@ class chatHistory:
 
         self.client = self.init_client()
         self.key_time = str(self.timestamp // 10000 * 10000)
-        self.ttl = str(int(time.time()) + 60 * 60 * 24) # 1 day
+        self.ttl = str(int(time.time()) + (60 * 60 * 24) * 3) # 3 days
 
     def init_client(self):
         dynamodb = boto3.client('dynamodb')
@@ -162,6 +162,11 @@ def handler(event, context):
 
         if 'challenge' in body:
             respond_slack_challenge(body)
+        
+        elif 'bot_id' in body['event']:
+            exit_ids = ['B0642024GLU']
+            if body['event']['bot_id'] in exit_ids:
+                return None
 
         elif verify_slack_signature(event):        
             try:
@@ -173,6 +178,7 @@ def handler(event, context):
                 logger.info('Input Pamameter does not exist in the request body.')
                 input_prompt = 'There is no prompt properly.'
             human_input = '{history}' + '¥n' + input_prompt
+            logger.info('Slack Event:' + '¥n' + json.dumps(body['event'], ensure_ascii=False))
     
     chat_history = chatHistory(user_id, timestamp, [human_input])
     system_message_prompt = SystemMessagePromptTemplate.from_template(system_preset)
