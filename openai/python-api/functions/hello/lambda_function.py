@@ -45,7 +45,7 @@ class chatHistory:
 
         self.client = self.init_client()
         self.key_time = str(self.timestamp // 10000 * 10000)
-        self.ttl = str(int(time.time()) + (60 * 60 * 24) * 3) # 3 days
+        self.ttl = str(int(time.time()) + (60 * 60 * 24) * 2) # 2 days
 
     def init_client(self):
         dynamodb = boto3.client('dynamodb')
@@ -133,11 +133,11 @@ def post_slack_message(slackbot_token, channel_id, msg):
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(payload))
-    if respose.status_code != 200:
+    if response.status_code != 200:
         logger.error(response.text)
         raise Exception('Failed to Post Slack API')
-    else:
-        return response.json()
+    # else:
+    #     return response.json()
 
 
 def handler(event, context):
@@ -146,7 +146,6 @@ def handler(event, context):
     chatApiKey = os.environ['OPENAI_API_KEY']
     chat = ChatOpenAI(model_name='gpt-3.5-turbo-16k', temperature=0.7, openai_api_key=chatApiKey, max_tokens=5000, verbose=True)
 
-    user_id = event['requestContext']['identity']['sourceIp']
     timestamp = event['requestContext']['requestTimeEpoch'] // 1000
     
     # chat_history = DynamoDBChatMessageHistory(
@@ -155,69 +154,83 @@ def handler(event, context):
     # )
 
     system_preset = 'You are a {role}, all the answer must be with confidence value between 0 and 10.'
-    human_input = '{history}' + '¥n' + 'Tell me What you can provide, and What a type of input you can better respond?'
+    human_input = '{history}, Tell me What you can provide, and What a type of input you can better respond?'
 
     if 'body' in event:
         body = json.loads(event['body'])
 
         if 'challenge' in body:
-            respond_slack_challenge(body)
-        
+            logger.ingo('challenge: ' + body['challenge'])
+            return {'challenge': body['challenge']}
+
         elif 'bot_id' in body['event']:
             exit_ids = ['B0642024GLU']
             if body['event']['bot_id'] in exit_ids:
                 return None
 
-        elif verify_slack_signature(event):        
+        elif verify_slack_signature(event):
+            logger.info('Slack Event: ' + json.dumps(body['event'], ensure_ascii=False))
             try:
                 # input_prompt = body['user_input']
                 input_prompt = body['event']['text']
-                logger.info('input: ' + human_input)
+                user_id = body['event']['user']
             except KeyError:
                 pass
-                logger.info('Input Pamameter does not exist in the request body.')
+                logger.warning('Input Pamameter does not exist in the request body, Slack Event: ' + json.dumps(body['event'], ensure_ascii=False))
                 input_prompt = 'There is no prompt properly.'
-            human_input = '{history}' + '¥n' + input_prompt
-            logger.info('Slack Event:' + '¥n' + json.dumps(body['event'], ensure_ascii=False))
+                user_id = event['requestContext']['identity']['sourceIp']
+            
+            human_input = '{history}. ' + input_prompt
+            logger.info('input: ' + human_input)
     
-    chat_history = chatHistory(user_id, timestamp, [human_input])
-    system_message_prompt = SystemMessagePromptTemplate.from_template(system_preset)
-    human_message_prompt = HumanMessagePromptTemplate.from_template(human_input)
+        recieved_chat = chatHistory(user_id, timestamp, [human_input])
+        system_message_prompt = SystemMessagePromptTemplate.from_template(system_preset)
+        human_message_prompt = HumanMessagePromptTemplate.from_template(human_input)
 
-    chat_prompt = ChatPromptTemplate.from_messages(
-        [system_message_prompt, human_message_prompt]
-    )
-    old_messages = chat_history.get_history()
-    reply = chat(
-        chat_prompt.format_prompt(
-            role='professional for science, technology, and humanities',
-            history=old_messages,
-        ).to_messages()
-    )
-
-    # ex.) reply = ('content', "I'm sorry, but I cannot understand the text you provided. Could you please rephrase or provide more context?"), ('additional_kwargs', {}), ('example', False)
-    for i in reply:            
-        if i[0] == 'content':
-            reply_content = i[1]
-            logger.info('output: ' + reply_content)
-            break
-
-    if reply_content:
-        chat_history = chatHistory(user_id, timestamp, ['Human:' + human_input, 'AI:' + reply_content])
-        chat_history.save_history()
-
-        res = post_slack_message(
-            os.getenv('SLACK_BOT_TOKEN'),
-            body['event']['channel'],
-            reply_content
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [system_message_prompt, human_message_prompt]
         )
-        logger.info(res)
+        old_messages = recieved_chat.get_history()
+        reply = chat(
+            chat_prompt.format_prompt(
+                role='professional for science, technology, and humanities',
+                history=old_messages,
+            ).to_messages()
+        )
 
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json; charset=utf-8'
-            },
-            'body': json.dumps(reply_content, ensure_ascii=False)
-        }
+        # ex.) reply = ('content', "I'm sorry, but I cannot understand the text you provided. Could you please rephrase or provide more context?"), ('additional_kwargs', {}), ('example', False)
+        reply_content = ''
+        for i in reply:            
+            if i[0] == 'content':
+                reply_content += i[1]
+                logger.info('output: ' + reply_content)
+                break
+            else:
+                continue
 
+        if reply_content:
+            # send_chat = chatHistory(user_id, timestamp, ['Human:' + human_input, 'AI:' + reply_content])
+            # send_chat.save_history()
+
+            res = post_slack_message(
+                os.getenv('SLACK_BOT_TOKEN'),
+                body['event']['channel'],
+                reply_content
+            )
+            logger.info('reply: chat.postMessage' + res)
+
+            # return {
+            #     'statusCode': 200,
+            #     'headers': {
+            #         'Content-Type': 'application/json; charset=utf-8'
+            #     },
+            #     'body': json.dumps(reply_content, ensure_ascii=False)
+            # }
+
+        # else:
+        #     res = post_slack_message(
+        #         os.getenv('SLACK_BOT_TOKEN'),
+        #         body['event']['channel'],
+        #         '受信したメッセージを理解できませんでした、再入力または管理者に調査依頼をお願いします。'
+        #     )
+        #     logger.warning('Could NOT reply: chat.postMessage' + res)
