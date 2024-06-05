@@ -25,13 +25,14 @@ jobs:
       - name: Setup
         id: setup
         run: |
-          echo "::add-mask::${{ github.event.inputs.slackBotToken }}"
           echo "SlackChannelId=${{ github.event.inputs.slackChannelId }}" >> "$GITHUB_OUTPUT"
           echo "ExitCode=${{ github.event.inputs.exitCode }}" >> "$GITHUB_OUTPUT"
 
       - name: Read payload file
         id: read-payload
         run: |
+          pwd
+          ls -la
           payload=$(cat ${{ github.event.inputs.payloadFile }})
           echo "payload=$payload" >> $GITHUB_ENV
       
