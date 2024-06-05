@@ -1,0 +1,41 @@
+name: test dispatch event
+
+on:
+  workflow_dispatch:
+    inputs:
+      slackChannelId:
+        description: 'Slack Channel ID'
+        required: true
+        default: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
+      payloadFile:
+        description: 'Path to payload file'
+        required: true
+        default: './success_payload.json'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      exitCode: ${{ steps.saveExitCode.exitCode }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+    # 他のステップがここに追加される
+
+      - name: Save exitCode
+        id: saveExitCode
+        run: |
+          if ${{ steps.checkout.conclusion }} == 'success'; then
+            echo "exitCode=0" >> $GITHUB_OUTPUT
+          else
+            echo "exitCode=1" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Call Reusable Workflow for Slack Notification
+        uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
+        with:
+          exitCode: ${{ steps.saveExitCode.outputs.exitCode }}
+          slackChannelId: ${{ inputs.slackChannelId }}
+          payloadFile: ${{ inputs.payloadFile }}
