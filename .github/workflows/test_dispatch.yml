@@ -9,7 +9,7 @@ on:
         default: './success_payload.json'
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
     outputs:
       exitCode: ${{ steps.saveExitCode.exitCode }}
@@ -29,9 +29,11 @@ jobs:
             echo "exitCode=1" >> $GITHUB_OUTPUT
           fi
 
-      - name: Call Reusable Workflow for Slack Notification
-        uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
-        with:
-          exitCode: ${{ steps.saveExitCode.outputs.exitCode }}
-          slackChannelId: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
-          payloadFile: ${{ inputs.payloadFile }}
+  call_SlackNotify:
+    needs: setup
+    uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
+    with:
+      exitCode: ${{ needs.setup.outputs.exitCode }}
+      slackChannelId: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
+      payloadFile: ${{ inputs.payloadFile }}
+  
