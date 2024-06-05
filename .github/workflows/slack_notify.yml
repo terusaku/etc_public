@@ -40,7 +40,7 @@ jobs:
       - name: Replace placeholder
         run: |
           translated_payload=$(cat "${{ github.event.inputs.payloadFile }}" | envsubst)
-          echo message=$(echo $translated_payload" | jq -c)  >> $GITHUB_ENV
+          echo message=$(echo $translated_payload" | jq -c | jq -R)  >> $GITHUB_ENV
 
       - name: Notify Slack - Success
         if: ${{ steps.setup.outputs.ExitCode == '0' }}
