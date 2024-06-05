@@ -23,7 +23,7 @@ jobs:
       - name: Save exitCode
         id: saveExitCode
         run: |
-          if ${{ steps.checkout.conclusion }} == 'success'; then
+          if ${{ github.action.steps.checkout.conclusion }} == 'success'; then
             echo "exitCode=0" >> $GITHUB_OUTPUT
           else
             echo "exitCode=1" >> $GITHUB_OUTPUT
