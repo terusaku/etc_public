@@ -20,8 +20,11 @@ jobs:
       SlackBotToken: ${{ steps.setup.outputs.SlackBotToken }}
       SlackChannelId: ${{ steps.setup.outputs.SlackChannelId }}
       ExitCode: ${{ steps.setup.outputs.ExitCode }}
+
     steps:
-    # inputs.slack-bot-tokenをマスキングしつつSLACK_BOT_TOKEN変数に使う
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup
         id: setup
         run: |
