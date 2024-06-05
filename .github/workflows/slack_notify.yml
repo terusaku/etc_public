@@ -34,14 +34,12 @@ jobs:
       - name: Read payload file
         id: read-payload
         run: |
-          pwd
-          ls -la
           payload=$(cat ${{ github.event.inputs.payloadFile }})
           echo "payload=$payload" >> $GITHUB_ENV
       
       - name: Replace placeholder
         run: |
-          translated_payload=$(echo ${{ env.payload }} | envsubst)
+          translated_payload=$(echo "${{ github.env.payload }}" | envsubst)
           echo "translated_payload=$translated_payload" >> $GITHUB_ENV
 
       - name: Notify Slack - Success
