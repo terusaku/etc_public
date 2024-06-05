@@ -6,7 +6,7 @@ on:
       payloadFile:
         description: 'Path to payload file'
         required: true
-        default: './success_payload.json'
+        default: '.github/workflows/success_payload.json'
 
 jobs:
   setup:
