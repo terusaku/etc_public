@@ -3,10 +3,6 @@ name: test dispatch event
 on:
   workflow_dispatch:
     inputs:
-      slackChannelId:
-        description: 'Slack Channel ID'
-        required: true
-        default: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
       payloadFile:
         description: 'Path to payload file'
         required: true
@@ -37,5 +33,5 @@ jobs:
         uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
         with:
           exitCode: ${{ steps.saveExitCode.outputs.exitCode }}
-          slackChannelId: ${{ inputs.slackChannelId }}
+          slackChannelId: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
           payloadFile: ${{ inputs.payloadFile }}
