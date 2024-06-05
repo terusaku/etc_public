@@ -40,7 +40,7 @@ jobs:
       - name: Replace placeholder
         run: |
           translated_payload=$(cat "${{ github.event.inputs.payloadFile }}" | envsubst)
-          echo "translated_payload=$translated_payload" >> $GITHUB_ENV
+          echo message=$(echo $translated_payload" | jq -c)  >> $GITHUB_ENV
 
       - name: Notify Slack - Success
         if: ${{ steps.setup.outputs.ExitCode == '0' }}
@@ -49,7 +49,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN_GITHUB_NOTIFY }}
         with:
           channel-id: ${{ github.event.inputs.slackChannelId }}
-          payload: ${{ env.translated_payload }}
+          payload: ${{ github.env.message }}
     
       - name: Notify Slack - Failure
         if: ${{ github.event.inputs.exitCode != '0' }}
@@ -58,5 +58,5 @@ jobs:
           SLACK_BOT_TOKEN: ${{ steps.setup.outputs.SlackBotToken }}
         with:
           channel-id: ${{ github.event.inputs.slackChannelId }}
-          payload: ${{ env.translated_payload }}
+          payload: ${{ github.env.message }}
     
