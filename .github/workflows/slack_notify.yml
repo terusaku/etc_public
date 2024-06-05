@@ -12,7 +12,6 @@ on:
       payloadFile:
         required: true
         type: string
-        default: './success_payload.json'
 
 jobs:
   notify:
