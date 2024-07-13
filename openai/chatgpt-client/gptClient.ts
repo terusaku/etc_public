@@ -26,7 +26,7 @@ class chatGptClient {
         }
         return chatGptClient.instance;
     }
-
+¥
     public async generateChat(prompt: string, maxTokens: number = 300): Promise<{consumedTokens: number, reply: string}> {
         // https://platform.openai.com/docs/api-reference/chat/create
         // Model endpoint compatibility: https://platform.openai.com/docs/models/model-endpoint-compatibility
