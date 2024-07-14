@@ -28,14 +28,9 @@ jobs:
 
       - name: Save exitCode
         id: saveExitCode
+        if: always()
         run: |
           echo "exitCode=${{ steps.checkout.outcome }}" >> $GITHUB_OUTPUT
-
-#          if ${{ steps.checkout.conclusion }} == success; then
-#            echo "exitCode=0" >> $GITHUB_OUTPUT
-#          else
-#            echo "exitCode=1" >> $GITHUB_OUTPUT
-#          fi
 
   call_SlackNotify:
     needs: setup
