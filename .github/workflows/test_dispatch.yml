@@ -21,6 +21,7 @@ jobs:
       #   uses: actions/checkout@v4
       - name: Dummy Checkout
         id: checkout
+        continue-on-error: true
         run: |
           exit 99
 
