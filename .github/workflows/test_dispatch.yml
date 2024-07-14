@@ -11,7 +11,6 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    continue-on-error: true
     outputs:
       exitCode: ${{ steps.saveExitCode.outputs.exitCode }}
 
@@ -21,6 +20,7 @@ jobs:
       #   uses: actions/checkout@v4
       - name: Dummy Checkout
         id: checkout
+        continue-on-error: true
         run: |
           exit 1
 
@@ -28,12 +28,12 @@ jobs:
 
       - name: Save exitCode
         id: saveExitCode
-        if: always()
         run: |
           echo "exitCode=${{ steps.checkout.outcome }}" >> $GITHUB_OUTPUT
 
   call_SlackNotify:
     needs: setup
+    if: always()
     uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
     secrets: inherit
     with:
