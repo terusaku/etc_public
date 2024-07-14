@@ -62,7 +62,7 @@ jobs:
             }
           
       - name: Notify Slack - Failure
-        if: ${{ github.event.inputs.exitCode != 'success' }}
+        if: ${{ inputs.exitCode != 'success' }}
         uses: slackapi/slack-github-action@v1.26.0
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN_GITHUB_NOTIFY }}
