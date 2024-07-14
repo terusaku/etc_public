@@ -52,8 +52,7 @@ jobs:
         with:
           # channel-id: ${{ github.event.inputs.slackChannelId }}
           channel-id: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
-          payload: |
-            ${{ github.env.message }}
+          payload: ${{ github.env.message }}
     
       - name: Notify Slack - Failure
         if: ${{ github.event.inputs.exitCode != '0' }}
