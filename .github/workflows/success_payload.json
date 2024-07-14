@@ -1,0 +1,26 @@
+{
+  "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": ":white_check_mark:[${{ github.repository }}] ${{ github.workflow }} Succeeded.",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "fields": [
+        {
+          "type": "mrkdwn",
+          "text": "*Status*: ${{ steps.publish.conclusion }}"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Commit*: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+        }
+      ]
+    }
+  ]
+}

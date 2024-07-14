@@ -3,43 +3,40 @@ name: test dispatch event
 on:
   workflow_dispatch:
     inputs:
-      slackBotToken:
-        description: 'Slack Bot Token'
-        required: true
-        default: ${{ secrets.SLACKBOT_TOKEN_GITHUB_NOTIFY }}
-      slackChannelId:
-        description: 'Slack Channel ID'
-        required: true
-        default: ${{ vars.SLACK_CHANNEL_ID_CICD }}
       payloadFile:
         description: 'Path to payload file'
         required: true
-        default: './success_payload.json'
+        default: '.github/workflows/success_payload.json'
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
     outputs:
-      exitCode: ${{ steps.saveExitCode.exitCode }}
+      exitCode: ${{ steps.saveExitCode.outputs.exitCode }}
 
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v4
+      # - name: Dummy Checkout
+      #   id: checkout
+      #   continue-on-error: true
+      #   run: |
+      #     exit 1
 
     # 他のステップがここに追加される
 
       - name: Save exitCode
         id: saveExitCode
         run: |
-          if ${{ steps.checkout.conclusion }} == 'success'; then
-            echo "exitCode=0" >> $GITHUB_OUTPUT
-          else
-            echo "exitCode=1" >> $GITHUB_OUTPUT
-          fi
+          echo "exitCode=${{ steps.checkout.outcome }}" >> $GITHUB_OUTPUT
 
-      - name: Call Reusable Workflow for Slack Notification
-        uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
-        with:
-          exitCode: ${{ steps.saveExitCode.outputs.exitCode }}
-          slackChannelId: ${{ inputs.slackChannelId }}
-          payloadFile: ${{ inputs.payloadFile }}
+  call_SlackNotify:
+    needs: setup
+    if: always()
+    uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
+    secrets: inherit
+    with:
+      exitCode: ${{ needs.setup.outputs.exitCode }}
+      slackChannelId: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
+  
