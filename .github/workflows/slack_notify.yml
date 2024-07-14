@@ -16,26 +16,10 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    # outputs:
-    #   SlackBotToken: ${{ steps.setup.outputs.SlackBotToken }}
-    #   SlackChannelId: ${{ steps.setup.outputs.SlackChannelId }}
-    #   ExitCode: ${{ steps.setup.outputs.ExitCode }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # - name: Setup
-      #   id: setup
-      #   run: |
-      #     echo "SlackChannelId=${{ github.event.inputs.slackChannelId }}" >> "$GITHUB_OUTPUT"
-      #     echo "ExitCode=${{ github.event.inputs.exitCode }}" >> "$GITHUB_OUTPUT"
-
-      # - name: Read payload file
-      #   id: read-payload
-      #   run: |
-      #     payload=$(cat ${{ github.event.inputs.payloadFile }})
-      #     echo "payload=$payload" >> $GITHUB_ENV
       
       - name: Replace placeholder
         run: |
@@ -52,8 +36,45 @@ jobs:
         with:
           # channel-id: ${{ github.event.inputs.slackChannelId }}
           channel-id: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
-          payload: ${{ github.env.message }}
-    
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":white_check_mark:[${{ github.repository }}] ${{ github.workflow }} Succeeded.",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow*: <https://github.com/${{ github.repository }}/actions/|${{ github.workflow }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status*: ${{ github.event.inputs.exitCode }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit*: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "成果物はCodeArtifactsにアップロードしました. <https://github.com/${{ github.repository }}/runs/${{ github.run_id}}/|GitHub Artifacts>から確認できます"
+                  }
+                }
+              ]
+            }
+
+          
       - name: Notify Slack - Failure
         if: ${{ github.event.inputs.exitCode != '0' }}
         uses: slackapi/slack-github-action@v1.26.0
