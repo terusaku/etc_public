@@ -34,7 +34,7 @@ jobs:
   call_SlackNotify:
     needs: setup
     if: always()
-    uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
+    uses: terusaku/etc_public/.github/workflows/slack_notify.yml@main
     secrets: inherit
     with:
       exitCode: ${{ needs.setup.outputs.exitCode }}
