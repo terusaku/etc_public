@@ -1,10 +1,11 @@
 {
+  "text": "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
   "blocks": [
     {
       "type": "header",
       "text": {
         "type": "plain_text",
-        "text": ":white_check_mark: *Workflow*: <https://github.com/${{ github.repository }}/actions/|${{ github.workflow }}>完了",
+        "text": ":white_check_mark:[${{ github.repository }}] ${{ github.workflow }} Succeeded.",
         "emoji": true
       }
     },

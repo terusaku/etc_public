@@ -11,13 +11,18 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    continue-on-error: true
     outputs:
-      exitCode: ${{ steps.saveExitCode.exitCode }}
+      exitCode: ${{ steps.saveExitCode.outputs.exitCode }}
 
     steps:
-      - name: Checkout
+      # - name: Checkout
+      #   id: checkout
+      #   uses: actions/checkout@v4
+      - name: Dummy Checkout
         id: checkout
-        uses: actions/checkout@v4
+        run: |
+          exit 99
 
     # 他のステップがここに追加される
 
