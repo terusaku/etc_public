@@ -23,7 +23,7 @@ jobs:
       - name: Save exitCode
         id: saveExitCode
         run: |
-          if ${{ github.action.steps.checkout.conclusion }} == 'success'; then
+          if ${{ conclusion }} == 'success'; then
             echo "exitCode=0" >> $GITHUB_OUTPUT
           else
             echo "exitCode=1" >> $GITHUB_OUTPUT
@@ -32,6 +32,7 @@ jobs:
   call_SlackNotify:
     needs: setup
     uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
+    secrets: inherit
     with:
       exitCode: ${{ needs.setup.outputs.exitCode }}
       slackChannelId: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
