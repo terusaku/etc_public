@@ -9,9 +9,6 @@ on:
       slackChannelId:
         required: true
         type: string
-      payloadFile:
-        required: true
-        type: string
 
 jobs:
   notify:
@@ -21,14 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Replace placeholder
-        run: |
-          cat "${{ inputs.payloadFile }}" | envsubst > translated_payload.json ; echo $?
-          cat ./translated_payload.json | jq -c ; echo $?
-          echo "message=$(cat ./translated_payload.json | jq -c)"  >> $GITHUB_ENV
-
       - name: Notify Slack - Success
-        # if: ${{ steps.setup.outputs.ExitCode == '0' }}
         if: ${{ inputs.exitCode == 'success' }}
         uses: slackapi/slack-github-action@v1.26.0
         env:
@@ -73,16 +63,13 @@ jobs:
                 }
               ]
             }
-
           
       - name: Notify Slack - Failure
-        # if: ${{ github.event.inputs.exitCode != '0' }}
         if: ${{ github.event.inputs.exitCode != 'success' }}
         uses: slackapi/slack-github-action@v1.26.0
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN_GITHUB_NOTIFY }}
         with:
-          # channel-id: ${{ github.event.inputs.slackChannelId }}
           channel-id: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
           payload: |
             {
