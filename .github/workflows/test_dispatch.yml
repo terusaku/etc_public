@@ -22,7 +22,7 @@ jobs:
       - name: Dummy Checkout
         id: checkout
         run: |
-          exit 99
+          exit 1
 
     # 他のステップがここに追加される
 
