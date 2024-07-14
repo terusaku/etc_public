@@ -50,7 +50,8 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN_GITHUB_NOTIFY }}
         with:
-          channel-id: ${{ github.event.inputs.slackChannelId }}
+          # channel-id: ${{ github.event.inputs.slackChannelId }}
+          channel-id: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
           payload: |
             ${{ github.env.message }}
     
@@ -60,7 +61,8 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN_GITHUB_NOTIFY }}
         with:
-          channel-id: ${{ github.event.inputs.slackChannelId }}
+          # channel-id: ${{ github.event.inputs.slackChannelId }}
+          channel-id: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
           payload: |
             ${{ github.env.message }}
     
