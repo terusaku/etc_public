@@ -51,7 +51,8 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN_GITHUB_NOTIFY }}
         with:
           channel-id: ${{ github.event.inputs.slackChannelId }}
-          payload: ${{ github.env.message }}
+          payload: |
+            ${{ github.env.message }}
     
       - name: Notify Slack - Failure
         if: ${{ github.event.inputs.exitCode != '0' }}
@@ -60,5 +61,6 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN_GITHUB_NOTIFY }}
         with:
           channel-id: ${{ github.event.inputs.slackChannelId }}
-          payload: ${{ github.env.message }}
+          payload: |
+            ${{ github.env.message }}
     
