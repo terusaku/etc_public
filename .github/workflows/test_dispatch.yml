@@ -15,14 +15,14 @@ jobs:
       exitCode: ${{ steps.saveExitCode.outputs.exitCode }}
 
     steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
-      # - name: Dummy Checkout
+      # - name: Checkout
       #   id: checkout
-      #   continue-on-error: true
-      #   run: |
-      #     exit 1
+      #   uses: actions/checkout@v4
+      - name: Dummy Checkout
+        id: checkout
+        continue-on-error: true
+        run: |
+          exit 1
 
     # 他のステップがここに追加される
 
@@ -34,7 +34,7 @@ jobs:
   call_SlackNotify:
     needs: setup
     if: always()
-    uses: terusaku/etc_public/.github/workflows/slack_notify.yml@feat/workflow_SlackNotify
+    uses: terusaku/etc_public/.github/workflows/slack_notify.yml@main
     secrets: inherit
     with:
       exitCode: ${{ needs.setup.outputs.exitCode }}
