@@ -39,4 +39,3 @@ jobs:
     with:
       exitCode: ${{ needs.setup.outputs.exitCode }}
       slackChannelId: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
-  

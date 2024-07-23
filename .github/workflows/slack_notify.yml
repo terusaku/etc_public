@@ -14,7 +14,7 @@ jobs:
   notify:
     runs-on: ubuntu-latest
 
-    steps:      
+    steps:
       - name: Notify Slack - Success
         if: ${{ inputs.exitCode == 'success' }}
         uses: slackapi/slack-github-action@v1.26.0
@@ -105,4 +105,4 @@ jobs:
                   }
                 }
               ]
-            }    
+            }
