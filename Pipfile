@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 datadog-api-client = "*"
+sarif-tools = "*"
 
 [dev-packages]
 pytest = "*"

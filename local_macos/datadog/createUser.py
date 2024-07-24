@@ -18,6 +18,11 @@ from datadog_api_client.v2.model.roles_type import RolesType
 
 data = [
     # ["title", "name", "email"],
+    ["Haruka Yamamoto", "山本春香", "furaharuk@hoshinoresorts.com"],
+    ["Takata Yasuo", "高田康穂", "brainjuggler@hoshinoresorts.com"],
+    ["Atsushi Okada", "岡田敦", "molehand.okada@hoshinoresorts.com"],
+    ["Kazuki Komori", "小森一樹", "uraura_komori@hoshinoresorts.com"],
+    ["Keiichiro Kawano", "河野圭一郎", "bird-bell-and-i@hoshinoresorts.com"],
 ]
 
 for user_info in data:
@@ -35,7 +40,7 @@ for user_info in data:
                         RelationshipToRoleData(
                             # id is role_id, which can be found in URL.
                             # https://app.datadoghq.com/organization-settings/roles?role_id={role_id}
-                            id="",
+                            id="508cb732-e15e-11e8-ad8f-f3273b623d29",
                             type=RolesType.ROLES,
                         )
                     ]

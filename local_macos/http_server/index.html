@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サンプルiframe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #dfdfdf;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #ffb732;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+        }
+        main {
+            padding: 20px;
+            background-color:#dfdfdf;
+            margin: 20px auto;
+            max-width: 800px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            line-height: 1.6;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color:#ffb732;
+            color: white;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        .responsive-iframe {
+            width: 100%;
+            height: 600px; /* Adjust as needed */
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sample Page for iframe</h1>
+    </header>
+
+    <main>
+        <iframe id="myIframe" src="https://xyz.com/" class="responsive-iframe"></iframe>
+
+        <button onclick="openLoginPopup()">Login with xyz.com</button>
+        <p id="token">Token: Not received</p>
+    </main>
+    <script>
+        function openLoginPopup() {
+            const loginPopup = window.open('https://xyz.com/login?client_id=.....&scope=openid+email+profile&redirect_uri=https%3A%2F%2Fxyz.com%2Fauth%2Fauthorization_code&response_type=code&state=%252F&identity_provider=COGNITO', 'Login Popup', 'width=500,height=600');
+            window.addEventListener('message', function(event) {
+                // Ensure the message is from the expected origin
+                // if (event.origin !== 'https://*..systems') {
+                //     return;
+                // }
+                // Handle the message
+                if (event.data.token) {
+                    document.getElementById('token').textContent = 'Token: ' + event.data.token;
+                }
+            }, false);
+        }
+    </script>    
+
+    <footer>
+        <script>
+            const currentDate = new Date();
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1;
+            const day = currentDate.getDate();
+            const formattedDate = `${year}/${month}/${day}`;
+            document.querySelector('footer').textContent = formattedDate;
+        </script>
+        &copy; 
+    </footer>
+</body>
+</html>
