@@ -1,0 +1,41 @@
+name: test dispatch event
+
+on:
+  workflow_dispatch:
+    inputs:
+      payloadFile:
+        description: 'Path to payload file'
+        required: true
+        default: '.github/workflows/success_payload.json'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      exitCode: ${{ steps.saveExitCode.outputs.exitCode }}
+
+    steps:
+      # - name: Checkout
+      #   id: checkout
+      #   uses: actions/checkout@v4
+      - name: Dummy Checkout
+        id: checkout
+        continue-on-error: true
+        run: |
+          exit 1
+
+    # 他のステップがここに追加される
+
+      - name: Save exitCode
+        id: saveExitCode
+        run: |
+          echo "exitCode=${{ steps.checkout.outcome }}" >> $GITHUB_OUTPUT
+
+  call_SlackNotify:
+    needs: setup
+    if: always()
+    uses: terusaku/etc_public/.github/workflows/slack_notify.yml@main
+    secrets: inherit
+    with:
+      exitCode: ${{ needs.setup.outputs.exitCode }}
+      slackChannelId: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}

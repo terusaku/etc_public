@@ -3,58 +3,34 @@ name: Slack Notification Workflow
 on:
   workflow_call:
     inputs:
-      slack-bot-token:
+      exitCode:
         required: true
         type: string
-      slack-channel-id:
+      slackChannelId:
         required: true
         type: string
-      event-type:
-        required: true
-        type: string
-      event-exit-code:
-        required: true
-        type: string
-
 
 jobs:
-  setup_variables:
+  notify:
     runs-on: ubuntu-latest
-    outputs:
-      SlackBotToken: ${{ steps.setup.outputs.SlackBotToken }}
-      SlackChannelId: ${{ steps.setup.outputs.SlackChannelId }}
-      EventType: ${{ steps.setup.outputs.EventType }}
-      ExitCode: ${{ steps.setup.outputs.ExitCode }}
-    steps:
-    # inputs.slack-bot-tokenをマスキングしつつSLACK_BOT_TOKEN変数に使う
-      - name: Setup
-        id: setup
-        run: |
-          echo "::add-mask::${{ inputs.slack-bot-token }}"
-          echo "SlackBotToken=${{ inputs.slack-bot-token }}" >> "$GITHUB_OUTPUT"
-          echo "SlackChannelId=${{ inputs.slack-slack-channel-id }}" >> "$GITHUB_OUTPUT"
-          echo "EventType=${{ inputs.event-type }}" >> "$GITHUB_OUTPUT"
-          echo "ExitCode=${{ inputs.event-exit-code }}" >> "$GITHUB_OUTPUT"
 
-  notify_failure:
-    runs-on: ubuntu-latest
-    needs: setup_variables
-    env:
-      SLACK_BOT_TOKEN: ${{ needs.setup_variables.outputs.SlackBotToken }}
-    if: ${{ needs.setup_variables.outputs.ExitCode == '1' }}
     steps:
-      - name: Notify failure to a Slack channel
+      - name: Notify Slack - Success
+        if: ${{ inputs.exitCode == 'success' }}
         uses: slackapi/slack-github-action@v1.26.0
-        with:
-          channel-id: ${{ needs.setup_variables.outputs.SlackChannelId }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN_GITHUB_NOTIFY }}
+        with:          
+          channel-id: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
           payload: |
             {
+              "text": "GitHub Action build result.....",
               "blocks": [
                 {
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":no_entry_sign:[${{ github.repository }}] ビルド失敗",
+                    "text": ":white_check_mark:[${{ github.repository }}] ${{ github.workflow }} Succeeded.",
                     "emoji": true
                   }
                 },
@@ -63,11 +39,11 @@ jobs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "*Workflow*: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.event.inputs.event-type }}>"
+                      "text": "*Workflow*: <https://github.com/${{ github.repository }}/actions/|${{ github.workflow }}>"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Status*: ${{ job.status }}"
+                      "text": "*Status*: ${{ inputs.exitCode }}"
                     },
                     {
                       "type": "mrkdwn",
@@ -79,7 +55,53 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "ビルドに失敗しています、エラー内容は <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|actions #${{ github.run_id }}> から確認できます"
+                    "text": "成果物はArtifactsにアップロードしました. <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}/|GitHub Artifacts>から確認できます"
+                  }
+                }
+              ]
+            }
+          
+      - name: Notify Slack - Failure
+        if: ${{ inputs.exitCode != 'success' }}
+        uses: slackapi/slack-github-action@v1.26.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN_GITHUB_NOTIFY }}
+        with:
+          channel-id: ${{ vars.SLACK_NOTIFY_CHANNEL_ID }}
+          payload: |
+            {
+              "text": "GitHub Action build result.....",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":no_entry_sign:[${{ github.repository }}] ${{ github.workflow }} Failure.",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Workflow*: <https://github.com/${{ github.repository }}/actions/|${{ github.workflow }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status*: ${{ inputs.exitCode }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit*: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "エラー内容は<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/|actions #${{ github.run_id }}>から確認できます"
                   }
                 }
               ]
