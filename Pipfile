@@ -5,10 +5,14 @@ name = "pypi"
 
 [packages]
 datadog-api-client = "*"
+flask = "*"
+transformers = "*"
+pymupdf = "*"
+datasets = "*"
 
 [dev-packages]
 pytest = "*"
 lizard = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.11"

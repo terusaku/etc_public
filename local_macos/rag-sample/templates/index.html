@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat with RAG</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Chat with RAG Model</h1>
+
+    <h2>Upload File</h2>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file"><br><br>
+        <input type="submit" value="Upload">
+    </form>
+    <div id="uploadResult"></div>
+
+    <h2>Chat</h2>
+    <form id="chatForm">
+        <input type="text" id="message" name="message"><br><br>
+        <input type="submit" value="Send">
+    </form>
+    <div id="chatResult"></div>
+
+    <script>
+        $(document).ready(function() {
+            $('#uploadForm').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '/upload',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(data) {
+                        $('#uploadResult').html('<p>' + data.response + '</p>');
+                    },
+                    error: function() {
+                        $('#uploadResult').html('<p>File upload failed.</p>');
+                    }
+                });
+            });
+
+            $('#chatForm').submit(function(event) {
+                event.preventDefault();
+                var message = $('#message').val();
+                $.ajax({
+                    url: '/chat',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ message: message }),
+                    success: function(data) {
+                        $('#chatResult').append('<p>Response: ' + data.response + '</p>');
+                        $('#message').val('');
+                    },
+                    error: function() {
+                        $('#chatResult').html('<p>Chat failed.</p>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
