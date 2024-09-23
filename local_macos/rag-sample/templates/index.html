@@ -1,62 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Chat with RAG</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Search</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Chat with RAG Model</h1>
+    <h1>PDF Search Application</h1>
 
-    <h2>Upload File</h2>
-    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file"><br><br>
-        <input type="submit" value="Upload">
+    <!-- ファイルアップロードフォーム -->
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file">
+        <button type="submit">Upload PDF</button>
     </form>
-    <div id="uploadResult"></div>
 
-    <h2>Chat</h2>
-    <form id="chatForm">
-        <input type="text" id="message" name="message"><br><br>
-        <input type="submit" value="Send">
-    </form>
-    <div id="chatResult"></div>
+    <!-- アップロードの結果表示 -->
+    <p id="uploadResult"></p>
+
+    <h2>Chat with Document</h2>
+
+    <!-- ユーザー入力 -->
+    <textarea id="messageInput" rows="4" cols="50" placeholder="Enter your question..."></textarea>
+    <button id="sendMessage">Ask</button>
+
+    <!-- レスポンスの表示 -->
+    <p id="chatResponse"></p>
 
     <script>
-        $(document).ready(function() {
-            $('#uploadForm').submit(function(event) {
-                event.preventDefault();
-                var formData = new FormData(this);
-                $.ajax({
-                    url: '/upload',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(data) {
-                        $('#uploadResult').html('<p>' + data.response + '</p>');
-                    },
-                    error: function() {
-                        $('#uploadResult').html('<p>File upload failed.</p>');
-                    }
-                });
-            });
+        // ファイルアップロード処理
+        $('#uploadForm').submit(function(event) {
+            event.preventDefault();
+            var formData = new FormData();
+            formData.append('file', $('#fileInput')[0].files[0]);
 
-            $('#chatForm').submit(function(event) {
-                event.preventDefault();
-                var message = $('#message').val();
-                $.ajax({
-                    url: '/chat',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ message: message }),
-                    success: function(data) {
-                        $('#chatResult').append('<p>Response: ' + data.response + '</p>');
-                        $('#message').val('');
-                    },
-                    error: function() {
-                        $('#chatResult').html('<p>Chat failed.</p>');
-                    }
-                });
+            $.ajax({
+                url: '/upload',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    $('#uploadResult').text(response.response);
+                },
+                error: function() {
+                    $('#uploadResult').text('File upload failed.');
+                }
+            });
+        });
+
+        // チャットの送信処理
+        $('#sendMessage').click(function() {
+            var message = $('#messageInput').val();
+
+            $.ajax({
+                url: '/chat',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ message: message }),
+                success: function(response) {
+                    $('#chatResponse').text(response.response);
+                },
+                error: function() {
+                    $('#chatResponse').text('Error in retrieving the response.');
+                }
             });
         });
     </script>

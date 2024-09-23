@@ -152,16 +152,6 @@ tests = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4
 tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
 
 [[package]]
-name = "backports-lzma"
-version = "0.0.14"
-description = "Backport of Python 3.3's 'lzma' module for XZ/LZMA compressed files."
-optional = false
-python-versions = "*"
-files = [
-    {file = "backports.lzma-0.0.14.tar.gz", hash = "sha256:16d8b68e4d3cd4e6c9ddb059850452946da3914c8a8e197a7f2b0954559f2df4"},
-]
-
-[[package]]
 name = "blinker"
 version = "1.8.2"
 description = "Fast, simple object-to-object and broadcast signaling"
@@ -1446,16 +1436,6 @@ files = [
 typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
-name = "pylzma"
-version = "0.5.0"
-description = "Python bindings for the LZMA library by Igor Pavlov."
-optional = false
-python-versions = "*"
-files = [
-    {file = "pylzma-0.5.0.tar.gz", hash = "sha256:b874172afbf37770e643bf2dc9d9b6b03eb95d8f8162e157145b3fe9e1b68a1c"},
-]
-
-[[package]]
 name = "pymupdf"
 version = "1.24.9"
 description = "A high performance Python library for data extraction, analysis, conversion & manipulation of PDF (and other) documents."
@@ -2460,4 +2440,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.9"
-content-hash = "1ccbea220315b78ba61b80fc0347da298a0c720f62c2223fdead77a146ce4493"
+content-hash = "2f6325b855523de370cf4bcc2951ebbc2584950201402866fc60b0e88dd2d487"

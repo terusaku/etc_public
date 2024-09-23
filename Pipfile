@@ -9,6 +9,12 @@ flask = "*"
 transformers = "*"
 pymupdf = "*"
 datasets = "*"
+langchain = "*"
+langchain-community = "*"
+torch = "*"
+scikit-learn = "*"
+langchain-chroma = "*"
+langchain-huggingface = "*"
 
 [dev-packages]
 pytest = "*"
