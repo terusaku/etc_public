@@ -1,0 +1,36 @@
+**/.venv/*
+
+# Test artifacts
+*.py,cover
+.pytest_cache/
+docs/_build/
+docs/build/
+pytestdebug.log
+
+# Byte-complied files
+*.py[cod]
+__pycache__/
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+.eggs/
+AUTHORS
+Changelog
+build/
+deb-build/
+dist/
+eggs/
+rpm-build/
+**/artifacts/**
+
+# Environments
+.env
+.tox/
+.venv
+venv/
+
+# Demo files
+/demo/artifacts
+/demo/daemon.log
+
