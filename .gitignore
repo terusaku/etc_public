@@ -8,3 +8,5 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+/aws/cdk/.venv
+local_macos/dify_docker/.env

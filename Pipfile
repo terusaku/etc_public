@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 datadog-api-client = "*"
 sarif-tools = "*"
+jupyter = "*"
+neo4j = "*"
 
 [dev-packages]
 pytest = "*"
