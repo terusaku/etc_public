@@ -67,23 +67,29 @@ class BrowserAutomationCLI {
 
       let shotCount = 1;
       console.log('現在のページをスクリーンショット中...');
-      await this.callMCPTool('browser_take_screenshot', {
-        filename: `/Users/31012015-AMA/Downloads/browser_snapshot${shotCount}.png`
+      const screenshotResult1 = await this.callMCPTool('browser_take_screenshot', {
+        filename: `/Users/31012015-AMA/Downloads/browser_snapshot${shotCount}.png`,
+        type: 'png',
+        fullPage: true
       });
+      console.log('スクリーンショット1結果:', screenshotResult1.content[0]?.text || 'スクリーンショット完了');
       shotCount++;
 
-      console.log('操作を実行中...');
-      const result = await this.callMCPTool('browser_click', {
-        text: action
-      });
+      console.log('ページのスナップショットを取得中...');
+      const snapshot = await this.callMCPTool('browser_get_snapshot', {});
+      console.log('スナップショット取得完了');
+      console.log('アクセシビリティツリー:', snapshot.content[0]?.text ? 'データ取得済み' : 'データなし');
 
-      console.log(`✅ ${action}操作が正常に完了しました`);
-      console.log('結果:', result.content[0]?.text || '操作完了');
+      console.log(`✅ ページの読み込みとスナップショット取得が完了しました`);
+      console.log(`📄 アクション "${action}" のためのページ情報を取得しました`);
 
       console.log('現在のページをスクリーンショット中...');
-      await this.callMCPTool('browser_take_screenshot', {
-        filename: `/Users/31012015-AMA/Downloads/browser_snapshot${shotCount}.png`
+      const screenshotResult2 = await this.callMCPTool('browser_take_screenshot', {
+        filename: `/Users/31012015-AMA/Downloads/browser_snapshot${shotCount}.png`,
+        type: 'png',
+        fullPage: true
       });
+      console.log('スクリーンショット2結果:', screenshotResult2.content[0]?.text || 'スクリーンショット完了');
       shotCount++;
 
     } catch (error) {
@@ -103,8 +109,19 @@ class BrowserAutomationCLI {
         arguments: args
       });
       return response as MCPToolResponse;
-    } catch (error) {
+    } catch (error: any) {
       console.error(`❌ ツール ${toolName} の呼び出しに失敗:`, error);
+      
+      if (error.message?.includes('invalid_type') || error.code === 'INVALID_PARAMS') {
+        console.error('💡 パラメータ検証エラー - 必須パラメータを確認してください');
+        console.error(`   ツール: ${toolName}`);
+        console.error(`   引数: ${JSON.stringify(args, null, 2)}`);
+        
+        if (toolName === 'browser_click') {
+          console.error('   browser_click には element (必須) と ref (オプション) が必要です');
+        }
+      }
+      
       throw error;
     }
   }

@@ -9,7 +9,8 @@
     "start": "npm run build && node dist/index.js",
     "dev": "tsx src/index.ts",
     "run": "npm run build && node dist/index.js",
-    "auto": "npm run build && node dist/run-automation.js"
+    "auto": "npm run build && node dist/run-automation.js",
+    "scrape-zenn": "tsx src/zenn-likes-scraper.ts"
   },
   "bin": {
     "browser-automation": "./dist/index.js"
@@ -19,7 +20,8 @@
     "@playwright/mcp": "^0.0.28",
     "@playwright/test": "^1.52.0",
     "commander": "^12.0.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "playwright": "^1.56.1"
   },
   "keywords": [
     "browser",
